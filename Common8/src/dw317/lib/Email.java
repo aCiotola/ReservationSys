@@ -9,7 +9,8 @@ import java.io.Serializable;
  * @version 27/09/2016
  * @since 1.8
  */
-public class Email implements Serializable, Comparable<Email> {
+public class Email implements Serializable, Comparable<Email> 
+{
 	private static final long serialVersionUID = 42031768871L;
 	private final String address;
 
@@ -17,8 +18,8 @@ public class Email implements Serializable, Comparable<Email> {
 	 * A one parameter Constructor which initializes the address and calls the
 	 * validate method for it.
 	 * 
-	 * @param address
-	 *            The full Email address string.
+	 * @param address The full Email address string.
+	 * 
 	 */
 	public Email(String address) {
 		this.address = validateEmail(address);
@@ -27,13 +28,14 @@ public class Email implements Serializable, Comparable<Email> {
 	/**
 	 * An overridden compareTo method that compares two Email objects.
 	 * 
-	 * @param email
-	 *            An Email object.
+	 * @param email An Email object.
+	 * 
 	 * @return The number representing the comparison.
+	 * 
 	 */
 	@Override
 	public int compareTo(Email email) {
-		if (this.getHost().compareToIgnoreCase(email.getHost()) < 0)
+		if (this.getHost().compareToIgnoreCase(email.getHost()) == 0)
 			return this.getUserId().compareToIgnoreCase(email.getUserId());
 		return this.getHost().compareToIgnoreCase(email.getHost());
 	}
@@ -57,7 +59,7 @@ public class Email implements Serializable, Comparable<Email> {
 			return false;
 
 		Email email = (Email) object;
-		return this.address.equalsIgnoreCase(email.address);
+		return this.address.equals(email.address);
 	}
 
 	/**
@@ -143,10 +145,9 @@ public class Email implements Serializable, Comparable<Email> {
 		String userId = trimmedEmail.substring(0, atIndex);
 		String hostName = trimmedEmail.substring(atIndex + 1, trimmedEmail.length());
 
-		for (int i = 0; i < userId.length() - 1; i++) {
-			if (userId.charAt(i) == '.')
-				numPeriods++;
-			if (numPeriods > 1)
+		for (int i = 0; i < userId.length() - 1; i++) 
+		{
+			if (userId.charAt(i) == '.' && userId.charAt(i + 1) == '.')
 				throw new IllegalArgumentException("Cannot have more than " + "one dot");
 		}
 
@@ -160,15 +161,15 @@ public class Email implements Serializable, Comparable<Email> {
 
 		if (userId.length() < 1 || userId.length() > 32 || hostName.length() < 1)
 			throw new IllegalArgumentException(
-					"UserId and HostName must be " + "larger than 1 or less than 32 characters!");
+					"UserId and HostName must be " + "larger than 0 or less than 32 characters!");
 
-		if (!userId.matches("^[^.][a-z-A-Z._0-9]*[^.]$"))
+		if (!userId.matches("^[^.][a-z-A-Z._0-9]+[^.]$") && !userId.matches("[a-z]"))
 			throw new IllegalArgumentException("UserId must only have letters," + " digits, '-', '_', '.' and "
 					+ "must not start or end with a '.'");
 
-		if (!hostName.matches("^[^-][-.a-zA-Z0-9]*[^-]$"))
+		if (!hostName.matches("^[^-][a-zA-Z0-9][-.a-zA-Z0-9]+[^-]$") && !hostName.matches("[a-z.]*"))
 			throw new IllegalArgumentException(
-					"Host Name must only have letters, " + "digits, '-' and must not start or " + "end with a '-'");
+					"Host Name must only have letters, digits, '-' and must not start or end with a '-'");
 		return trimmedEmail;
 	}
 }

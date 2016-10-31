@@ -154,7 +154,6 @@ public abstract class AbstractCreditCard implements CreditCard {
 			total += resized[add];
 			if (add == resized.length - 1) {
 				if (total % 10 == 0) {
-					System.out.println("This is a valid credit card number!\n");
 					return number;
 				} else
 					throw new IllegalArgumentException("Not a credit card!");

@@ -26,11 +26,15 @@ public class EmailTest
 	private static void testCompareTo()
 	{
 		System.out.println("\nTesting the compareTo method.");
-		testCompareTo("Case 1 - Valid data (fakeemail20@gmail.wtv.com - fakeemail20@gmail.wtv.com == 0)", 
+		testCompareTo("Case 1 - Valid data (fakeemail20@gmail.wtv.com - fakeemail20@gmail.wtv.com)", 
 				"fakeemail20@gmail.wtv.com", "fakeemail20@gmail.wtv.com", true);
 
-		testCompareTo("Case 2 - Valid data (fakeemail20@gmail.wtv.com - wrongemail20@gmail.wtv.com > 0)", 
-				"fakeemail20@gmail.wtv.com", "wrongemail@gmail.com", true);
+		testCompareTo("Case 2 - Valid data (fakeemail20@gmail.com - wrongemail20@gmail.wtv.com)", 
+				"fakeemail20@gmail.com", "wrongemail@outlook.com", true);
+		
+		testCompareTo("Case 3 - Same userId, different hostname", "fakeemail20@outlook.com", "fakeemail20@hotmail.com", true);
+		
+		testCompareTo("Case 3 - different userId, same hostname", "fakeemail20@gmail.com", "myEmail@gmail.com", true);
 	}
 	
 	private static void testCompareTo (String testCase, String emailAddress, String otherEmail, boolean expectValid)
@@ -128,20 +132,27 @@ public class EmailTest
 		
 		testGetHostName("Case 4 - Valid data (fakeemail20@gmail76.wtv.com)", "fakeemail20@gmail76.wtv.com", "gmail76.wtv.com");
 		
-		//testGetHostName("Case 5 - Invalid data - Hyphen infront of Host Name(fakeemail20@-gmail.wtv.com)", 
-		//				"fakeemail20@-gmail.wtv.com", "fakeemail20");
+		testGetHostName("Case 5 - Invalid data - Hyphen infront of Host Name(fakeemail20@-gmail.wtv.com)", 
+						"fakeemail20@-gmail.wtv.com", "fakeemail20");
+		
+		testGetHostName("Case 6 - Valid data (a@a.com)", "a@a.com", "a.com");
 	} 
 	
 	private static void testGetHostName(String testCase, 
 			String emailAddress, String expectedUserId)
 	{
 		System.out.println("   " + testCase);
-		Email address = new Email (emailAddress);
-		System.out.print("\tThe host name is: " + address.getHost());
-
-		if (!address.getHost().equals(expectedUserId))
-			System.out.print("  Error! Expected Invalid. ==== FAILED TEST ====");
-
+		try
+		{
+			Email address = new Email (emailAddress);
+			System.out.print("\tThe host name is: " + address.getHost());
+			if (!address.getHost().equals(expectedUserId))
+				System.out.print("  Error! Expected Invalid. ==== FAILED TEST ====");
+		}
+		catch(IllegalArgumentException iae)
+		{
+			System.out.print("\t" + iae.getMessage());
+		}
 		System.out.println("\n");
 	}
 	
@@ -157,19 +168,28 @@ public class EmailTest
 		
 		testGetUserId("Case 4 - Valid data (fake-email20@gmail.wtv.com)", "fake-email20@gmail.wtv.com", "fake-email20");
 		
-		//testGetUserId("Case 5 - Invalid data - dot infront of UserId(.fakeemail20@gmail.wtv.com)", 
-		//				".fakeemail20@gmail.wtv.com", "fakeemail20");
+		testGetUserId("Case 5 - Invalid data - dot infront of UserId(.fakeemail20@gmail.wtv.com)", 
+						".fakeemail20@gmail.wtv.com", "fakeemail20");
+		
+		testGetUserId("Case 6 - Valid data (a@a.com)", "a@a.com", "a");
 	}
 	
 	private static void testGetUserId(String testCase, 
 			String emailAddress, String expectedUserId)
 	{
-		System.out.println("   " + testCase);
-		Email address = new Email (emailAddress);
-		System.out.print("\tThe UserId is: " + address.getUserId());
+		try
+		{
+			System.out.println("   " + testCase);
+			Email address = new Email (emailAddress);
+			System.out.print("\tThe UserId is: " + address.getUserId());
 
-		if (!address.getUserId().equals(expectedUserId))
-			System.out.print("  Error! Expected Invalid. ==== FAILED TEST ====");
+			if (!address.getUserId().equals(expectedUserId))
+				System.out.print("  Error! Expected Invalid. ==== FAILED TEST ====");
+		}
+		catch(IllegalArgumentException iae)
+		{
+			System.out.print("\t" + iae.getMessage());
+		}
 
 		System.out.println("\n");
 	}
@@ -241,10 +261,11 @@ public class EmailTest
 		
 		testTheOneParameterConstructor("Case 10 - Invalid data - no '@'", "fakeemail20gmail.wtv.com", false);
 		
-		testTheOneParameterConstructor("Case 11 - Invalid data - Too many dots", "fak.ee.mail20@gmail.wtv.com", false);
+		testTheOneParameterConstructor("Case 11 - Valid data - dots", "fak.ee.mail20@gmail.wtv.com", true);
 		
-		testTheOneParameterConstructor("Case 12 - Invalid data - null", null
-				, false);
+		testTheOneParameterConstructor("Case 12 - Invalid data - null", null , false);
+		
+		testTheOneParameterConstructor("Case 11 - Invalid data - too many dots", "fake..email20@gmail.wtv.com", false);
 	}
 
 	private static void testTheOneParameterConstructor(String testCase, String emailAddress, boolean expectValid) 

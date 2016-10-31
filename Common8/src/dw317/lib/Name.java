@@ -157,11 +157,9 @@ public class Name implements Comparable<Name> {
 		if (namePart.length() < 2)
 			throw new IllegalArgumentException("The name must be longer than 2 letters!");
 
-		for (int i = 0; i < namePart.length(); i++) {
-			if (!namePart.matches("[a-zA-Z]+") && namePart.charAt(i) != '-' && namePart.charAt(i) != ' '
-					&& namePart.charAt(i) != '\'')
-				throw new IllegalArgumentException("A name must only contain letters, hyphens, spaces and apostraphes");
-		}
+		if (!namePart.matches("[a-zA-Z-' ]+"))
+			throw new IllegalArgumentException("A name must only contain letters, hyphens, spaces and apostraphes");
+		
 		return namePart;
 	}
 }
