@@ -7,9 +7,10 @@ Contributors:
  - Hannah
  - Alessandro
  
-***Phase 3 is due November 11***
+***Phase 4 is due November 25***
 
 Currently completed:
   - Prep Phase A
   - Phase 1
   - Phase 2
+  - Phase 3
