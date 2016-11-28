@@ -214,19 +214,18 @@ public class DawsonReservation implements Reservation {
 	 */
 	@Override
 	public boolean overlap(Reservation other) {
-		if (this.room.getRoomNumber() == other.getRoom().getRoomNumber()) {
-			if (this.checkInDate.isAfter(other.getCheckOutDate())) {
-				System.out.println("\t y Reservations are overlaping.");
+		if (this.room.getRoomNumber() == other.getRoom().getRoomNumber()) 
+		{
+			if (this.checkInDate.isBefore(other.getCheckOutDate()) && 
+					this.checkOutDate.isAfter(other.getCheckInDate())) 
+			{
 				return true;
 			} else if (!this.checkOutDate.isBefore(other.getCheckInDate())) {
-				System.out.println("\t x Reservations are overlaping.");
 				return true;
 			} else {
-				System.out.println("\t z Reservations are not overlaping.");
 				return false;
 			}
 		} else {
-			System.out.println("\t v Reservations are not overlaping.");
 			return false;
 		}
 	}

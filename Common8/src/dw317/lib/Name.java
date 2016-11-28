@@ -3,6 +3,8 @@
  */
 package dw317.lib;
 
+import java.io.Serializable;
+
 /**
  * Defines a Name object, encapsulates a first and last name.
  * 
@@ -11,7 +13,8 @@ package dw317.lib;
  * @since 1.8
  *
  */
-public class Name implements Comparable<Name> {
+public class Name implements Comparable<Name>, Serializable
+{
 	private String firstName = "";
 	private String lastName = "";
 	private static final long serialVersionUID = 42031768871L;

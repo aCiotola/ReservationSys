@@ -3,6 +3,7 @@
  */
 package dw317.lib;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -10,12 +11,14 @@ import java.util.Optional;
  * Takes the city, civicnumber, province, 
  * code and streetname and returns the address.
  */ 
-public class Address {
+public class Address implements Serializable
+{
 	private String city = "";
 	private String civicNumber = "";
 	private String province = "";
 	private String code = "";
 	private String streetName = "";
+	private static final long  serialVersionUID = 42031768871L;
 
 	public Address() 
 	{}

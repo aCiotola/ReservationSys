@@ -34,27 +34,27 @@ public class Utility
 		}
 	 }
 	
-	public static Object deserializeObject (String fileSpecification)
-			throws IOException, ClassNotFoundException 
+	public static Object deserializeObject (String fileSpec)
+            throws IOException, ClassNotFoundException     
 	{
 		ObjectInputStream in = null;
-		try 
+		try
 		{
 			Object obj = null;
-			in = new ObjectInputStream(new FileInputStream (fileSpecification));
+			in = new ObjectInputStream(new FileInputStream (fileSpec));
 			if (in != null)
-				obj = in.readObject ();
+                obj = in.readObject ();
 			return obj;
 		}
-		catch (ClassNotFoundException | IOException e)
+		catch (ClassNotFoundException | IOException e)      
 		{
 			//normally the exception would be logged to file then thrown
-			throw new IOException ("Error deserializing object from " + fileSpecification + "\n" + e);
+			throw new IOException ("Error deserializing object from " + fileSpec + "\n" + e);
 		}
 		finally
 		{
 			if (in != null)
-				in.close ();
+               in.close ();
 		}
 	}
 	

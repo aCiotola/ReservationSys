@@ -148,10 +148,10 @@ public class HotelFileLoader {
 					foundRoomIndex = searchForRoomNumber(roomList, Integer.parseInt(fields[7].trim()));
 
 					if (foundEmailIndex < 0)
-						throw new IllegalArgumentException("No matching email found.");
+						throw new IllegalArgumentException(" No matching email found.");
 
 					if (foundRoomIndex < 0)
-						throw new IllegalArgumentException("No matching room found.");
+						throw new IllegalArgumentException(" No matching room found.");
 
 					reservation[i] = new DawsonReservation(customerList[foundEmailIndex], roomList[foundRoomIndex],
 							Integer.parseInt(fields[1]), Integer.parseInt(fields[2]), Integer.parseInt(fields[3]),
@@ -272,8 +272,10 @@ public class HotelFileLoader {
 	 */
 	private static int searchForRoomNumber(Room[] list, int number) {
 
-		for (int i = 0; i < list.length; i++) {
-			if (list[i].getRoomNumber() == number) {
+		for (int i = 0; i < list.length; i++)
+		{
+			if (list[i].getRoomNumber() == number) 
+			{
 				return i;
 			}
 		}

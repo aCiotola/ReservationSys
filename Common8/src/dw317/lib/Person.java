@@ -3,6 +3,7 @@
  */
 package dw317.lib;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -11,10 +12,11 @@ import java.util.Optional;
  * @author Alessandro Ciotola
  *
  */
-public class Person
+public class Person implements Serializable
 {
 	private Name name;
 	private Address address;
+	private static final long  serialVersionUID = 42031768871L;
 	
 	public Person(String firstName, String lastName)
 	{

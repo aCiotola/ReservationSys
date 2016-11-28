@@ -2,6 +2,7 @@ package dw317.hotel.business.interfaces;
 
 import java.io.Serializable;
 
+import dw317.hotel.data.interfaces.ReservationDAO;
 import dw317.lib.creditcard.CreditCard;
 
 /**
@@ -81,4 +82,5 @@ public interface HotelFactory extends Serializable {
 	 * @return The copy of the Reservation.
 	 */
 	Reservation getReservationInstance(Reservation toCopy);
+	AllocationPolicy getAllocationPolicy(ReservationDAO reservations);
 }

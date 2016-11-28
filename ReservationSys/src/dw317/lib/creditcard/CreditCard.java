@@ -8,7 +8,8 @@ public interface CreditCard extends Serializable {
 	CardType getType();
 
 	// Credit card factory method based on the type
-	public static CreditCard getInstance(CardType type, String number) {
+	public static CreditCard getInstance(CardType type, String number) 
+	{
 		CreditCard card = null;
 		switch (type) {
 		case MASTERCARD:

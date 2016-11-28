@@ -14,11 +14,9 @@ import group8.hotel.business.DawsonHotelFactory;
 import group8.hotel.business.DawsonReservation;
 
 /**
- * Class which manages a Reservation list's database.
  * 
  * @author Phi Dai Nguyen
  * @version 11.13.2016
- * @since 1.8
  */
 public class ReservationListDB implements ReservationDAO {
 	private List<Reservation> database;
@@ -27,15 +25,17 @@ public class ReservationListDB implements ReservationDAO {
 	private final HotelFactory factory;
 
 	public ReservationListDB(ListPersistenceObject listPersistenceObject) {
-		this.database = listPersistenceObject.getReservationDatabase();
-		this.listPersistenceObject = listPersistenceObject;
-		this.factory = null;
-	}
-
-	public ReservationListDB(ListPersistenceObject listPersistenceObject, HotelFactory factory) {
+		this.allRooms = listPersistenceObject.getRoomDatabase();
 		this.database = listPersistenceObject.getReservationDatabase();
 		this.listPersistenceObject = listPersistenceObject;
 		this.factory = DawsonHotelFactory.DAWSON;
+	}
+
+	public ReservationListDB(ListPersistenceObject listPersistenceObject, HotelFactory factory) {
+		this.allRooms = listPersistenceObject.getRoomDatabase();
+		this.database = listPersistenceObject.getReservationDatabase();
+		this.listPersistenceObject = listPersistenceObject;
+		this.factory = factory;
 	}
 
 	@Override
@@ -66,6 +66,11 @@ public class ReservationListDB implements ReservationDAO {
 		if (reserv == null)
 			throw new IllegalArgumentException("Reservation cannot be null.");
 
+		for (int i = 0; i < database.size(); i++){
+				if (reserv.overlap(database.get(i)))
+						throw new DuplicateReservationException("This room is already reserved!");
+		}
+		
 		int index = binarySearch(database, reserv);
 		if (index >= 0)
 			throw new DuplicateReservationException();
@@ -86,7 +91,7 @@ public class ReservationListDB implements ReservationDAO {
 	@Override
 	public void disconnect() throws IOException {
 		if (database == null)
-			throw new NullPointerException("Database is empty");
+			throw new NullPointerException("Databse is empty");
 		else {
 			listPersistenceObject.saveReservationDatabase(database);
 			database = null;
@@ -109,14 +114,14 @@ public class ReservationListDB implements ReservationDAO {
 		if (database == null)
 			throw new NullPointerException("Database is empty");
 
-		List<Reservation> reservation = new ArrayList<Reservation>(0);
-
-		for (Reservation r : database) {
-			Customer theCustomer = r.getCustomer();
-			if (theCustomer.getName().equals(cust))
-				reservation.add(r);
+		List<Reservation> reservation = new ArrayList<Reservation>();
+		
+		for (int i = 0; i < database.size(); i++){
+			if (database.get(i).getCustomer().getName().equals(cust.getName()))
+				reservation.add(database.get(i));
 		}
 		return reservation;
+
 	}
 
 	/**
@@ -154,16 +159,13 @@ public class ReservationListDB implements ReservationDAO {
 		List<Room> reserved = new ArrayList<Room>();
 		if (checkin.isAfter(checkout))
 			return reserved;
+		
+		//
 
-		for (Reservation reservedRooms : database) {
-			LocalDate checkInTemp = reservedRooms.getCheckInDate();
-			LocalDate checkOutTemp = reservedRooms.getCheckOutDate();
-
-			if (checkInTemp.isAfter(checkin) && checkOutTemp.isBefore(checkout))
-				reserved.add(reservedRooms.getRoom());
-			else
-				System.out.println(" This is not a reserved room during the time period!" + reservedRooms);
-
+		for (int i = 0; i < database.size(); i++){			
+				if (database.get(i).getCheckInDate().isBefore(checkout))
+					if (database.get(i).getCheckOutDate().isAfter(checkin))
+						reserved.add(database.get(i).getRoom());
 		}
 		return reserved;
 
@@ -183,20 +185,20 @@ public class ReservationListDB implements ReservationDAO {
 	 */
 	@Override
 	public List<Room> getFreeRooms(LocalDate checkin, LocalDate checkout) {
-		List<Room> free = new ArrayList<Room>(); // same as above but if it's
-													// empty. (isEmpty)
-
-		for (Reservation getFree : database) {
-			LocalDate checkInTemp = getFree.getCheckInDate();
-			LocalDate checkOutTemp = getFree.getCheckOutDate();
-
-			if (checkInTemp.isAfter(checkout) == false && checkOutTemp.isBefore(checkin) == false)
-				free.add(getFree.getRoom());
-			else
-				System.out.println(" This is not a free room during the time period!" + getFree);
+		List<Room> free = new ArrayList<Room>(allRooms); 
+		List<Room> reserved = getReservedRooms(checkin,checkout);
+		for (int i = 0; i < reserved.size(); i++)
+		{
+			for (int j = 0; j < free.size(); j++)
+			{
+				if (free.get(j).getRoomNumber() == (reserved.get(i).getRoomNumber()))
+				{
+					free.remove(free.get(j));
+					j--;
+				}
+			}			
 		}
 		return free;
-
 	}
 
 	/**
@@ -217,18 +219,15 @@ public class ReservationListDB implements ReservationDAO {
 	public List<Room> getFreeRooms(LocalDate checkin, LocalDate checkout, RoomType roomType) {
 		// same as above but with a specific room type.
 		List<Room> freeWithType = new ArrayList<Room>();
-		;
-		for (Reservation freeTypeRooms : database) {
-			LocalDate checkInTemp = freeTypeRooms.getCheckInDate();
-			LocalDate checkOutTemp = freeTypeRooms.getCheckOutDate();
-
-			if (checkInTemp.isAfter(checkin) == false && checkOutTemp.isBefore(checkout) == false
-					&& freeTypeRooms.getRoom().getRoomType() == roomType)
-				freeWithType.add(freeTypeRooms.getRoom());
-			else
-				System.out.println(" There is no free room with that roomtype during this period!" + freeTypeRooms);// fix
+		List<Room> freeRooms = getFreeRooms(checkin,checkout);
+		
+		for (int i = 0; i < freeRooms.size(); i++)
+		{
+			if (freeRooms.get(i).getRoomType().equals(roomType))
+				freeWithType.add(freeRooms.get(i));
 		}
 		return freeWithType;
+		
 	}
 
 	/**
@@ -238,11 +237,13 @@ public class ReservationListDB implements ReservationDAO {
 	@Override
 	public void clearAllPast() {
 
-		for (Reservation r : database) 
-		{
-			if (r.getCheckOutDate().isBefore(LocalDate.now()))
-				database.remove(r);
+		for (int i = 0; i < database.size(); i++){
+			if (database.get(i).getCheckOutDate().isBefore(LocalDate.now())){
+				database.remove(i);
+				i--;
+			}
 		}
+	
 	}
 
 	/**

@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 /** 
  * A ListUtilities class that contains different utility methods for
@@ -51,7 +52,7 @@ public class ListUtilities
 			else
 				return mid;
 		}
-		return -low + 1;
+		return -(low + 1);
 	}
 	
 	/**
@@ -93,7 +94,7 @@ public class ListUtilities
 	{
 		if(list3[posList3].compareTo(list[posList]) == 0)
 		{
-			if(list3[posList3].hashCode() == list[posList].hashCode())
+			if(list3[posList3].compareTo(list[posList]) == 0)
 				duplicateObjectsInList(list3[posList], list[posList],
 				duplicateFileName);
 			else
@@ -174,7 +175,7 @@ public class ListUtilities
 			else
 			{
 				//2 objects are equal if their hashcodes are equal.
-				if (list1Stuff.hashCode() == list2Stuff.hashCode())
+				if (list1Stuff.compareTo(list2Stuff) == 0)
 				{
 					list3[posList3] = list1Stuff;
 					duplicateObjectsInList(list1Stuff, list2Stuff,
@@ -268,7 +269,39 @@ public class ListUtilities
 				outputFile.close();
 		}
 	}
+	
+	public static <T> void saveListToTextFile(List<T> objects, String filename) 
+	throws FileNotFoundException, UnsupportedEncodingException
+	{
+		saveListToTextFile(objects, filename, false, CHARACTER_ENCODING);
+	}
 
+	public static <T> void saveListToTextFile(List<T> objects, String filename, boolean append)
+			throws FileNotFoundException, UnsupportedEncodingException 
+	{
+		saveListToTextFile(objects, filename, append, CHARACTER_ENCODING);
+	}
+
+	public static <T> void saveListToTextFile(List<T> objects,	String filename, boolean append, Charset characterEncoding)
+			throws FileNotFoundException, UnsupportedEncodingException 
+	{
+		PrintWriter outputFile = null;
+
+		try {
+			FileOutputStream f = new FileOutputStream(filename, append);
+			OutputStreamWriter out = new OutputStreamWriter(f, characterEncoding);
+			outputFile = new PrintWriter(new BufferedWriter(out));
+
+			for (Object obj : objects)
+				if (obj != null)
+					outputFile.println(obj);
+		} catch (FileNotFoundException e) {
+			throw new FileNotFoundException("Error saving list! Unable to access the device " + filename);
+		} finally {
+			if (outputFile != null)
+				outputFile.close();
+		}
+	}
 	
 	/**
 	 * Sorts a list of objects in ascending natural order using selection sort.

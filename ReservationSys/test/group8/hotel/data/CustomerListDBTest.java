@@ -5,8 +5,12 @@ package group8.hotel.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import dw317.hotel.business.interfaces.Customer;
 import dw317.hotel.business.interfaces.HotelFactory;
+import dw317.hotel.business.interfaces.Reservation;
+import dw317.hotel.business.interfaces.Room;
 import dw317.hotel.data.DuplicateCustomerException;
 import dw317.hotel.data.NonExistingCustomerException;
 import dw317.hotel.data.interfaces.ListPersistenceObject;
@@ -16,6 +20,7 @@ import dw317.lib.creditcard.CreditCard.CardType;
 import group8.hotel.business.DawsonCustomer;
 import group8.hotel.business.DawsonHotelFactory;
 import group8.util.ListUtilities;
+import group8.util.Utility;
 
 /**
  * @author Alessandro Ciotola
@@ -23,7 +28,7 @@ import group8.util.ListUtilities;
  */
 public class CustomerListDBTest 
 {
-	public static void main(String[] args) throws DuplicateCustomerException 
+	public static void main(String[] args) throws DuplicateCustomerException, IOException 
 	{
 		testOneParameterConstructor();
 		testTwoParameterConstructor();
@@ -35,10 +40,10 @@ public class CustomerListDBTest
 
 	private static void testOneParameterConstructor()
 	{
-		System.out.println("\nTesting the one parameter constructor.");
+		System.out.println("Testing the one parameter constructor.");
 		setup();
-		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
-				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		ListPersistenceObject listPersistenceObject = new ObjectSerializedList
+				("testfiles/testRooms.ser", "testfiles/testCustomers.ser", "testfiles/testReservations.ser");
 		testOneParameterConstructor("Case 1: Valid", listPersistenceObject);
 		testOneParameterConstructor("Case 2: null listPersistenceObject", null);
 		teardown();
@@ -46,10 +51,11 @@ public class CustomerListDBTest
 
 	public static void testOneParameterConstructor(String testCase, ListPersistenceObject list)
 	{
-		System.out.println("\t" + testCase);
+		System.out.println("\n" + testCase);
 		try {
+			convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 			CustomerListDB customerDB = new CustomerListDB(list);
-			System.out.print("\tThe PatientListDB instance was created:\n\t" + customerDB);
+			System.out.print("\tThe CustomerListDB instance was created:\n\t" + customerDB);
 		} catch (IllegalArgumentException iae) {
 			System.out.print("\tError! There is an invalid list value. " + iae.getMessage());
 		} catch (Exception e) {
@@ -62,8 +68,8 @@ public class CustomerListDBTest
 	{
 		System.out.println("\nTesting the two parameter constructor.");
 		setup();
-		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
-				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		ListPersistenceObject listPersistenceObject = new ObjectSerializedList
+				("testfiles/testRooms.ser", "testfiles/testCustomers.ser", "testfiles/testReservations.ser");
 		testTwoParameterConstructor("Case 1: Valid", listPersistenceObject, DawsonHotelFactory.DAWSON);
 		testTwoParameterConstructor("Case 2: null listPersistenceObject", null, DawsonHotelFactory.DAWSON);
 		testTwoParameterConstructor("Case 3: null DawsonHotelFactory", listPersistenceObject, null);
@@ -72,8 +78,9 @@ public class CustomerListDBTest
 
 	public static void testTwoParameterConstructor(String testCase, ListPersistenceObject list, HotelFactory factory)
 	{
-		System.out.println("\t" + testCase);
+		System.out.println("\n" + testCase);
 		try {
+			convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 			CustomerListDB customerDB = new CustomerListDB(list, factory);
 			System.out.print("\tThe CustomerListDB instance was created:\n\t" + customerDB);
 		} catch (IllegalArgumentException iae) {
@@ -88,8 +95,8 @@ public class CustomerListDBTest
 	{
 		System.out.println("\nTesting the Add method");
 		setup();
-		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
-				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		ListPersistenceObject listPersistenceObject = new ObjectSerializedList
+				("testfiles/testRooms.ser", "testfiles/testCustomers.ser", "testfiles/testReservations.ser");
 		DawsonCustomer customer1 = new DawsonCustomer("John", "Smith", "00000000@outlook.com");
 		DawsonCustomer customer2 = new DawsonCustomer("Sam", "Nicholas", "NNNNNNNNNNNN@gmail.com");
 		DawsonCustomer customer3 = new DawsonCustomer("Sam", "Nicholas", "NNNNNNNNNNNN@gmail.com");
@@ -104,8 +111,10 @@ public class CustomerListDBTest
 	private static void testAdd(String testCase, DawsonCustomer cust1, DawsonCustomer cust2, ListPersistenceObject listPersistenceObject)
 			throws DuplicateCustomerException 
 	{
+		System.out.println("\n" + testCase);
 		try 
 		{
+			convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 			CustomerListDB cDB = new CustomerListDB(listPersistenceObject, DawsonHotelFactory.DAWSON);
 			cDB.add(cust1);
 			cDB.add(cust2);
@@ -118,7 +127,7 @@ public class CustomerListDBTest
 		System.out.println();
 	}
 
-	private static void testDisconnect() 
+	private static void testDisconnect() throws IOException 
 	{
 		System.out.println("\nTesting the Disconnect method");
 		setup();
@@ -130,11 +139,12 @@ public class CustomerListDBTest
 		teardown();
 	}
 	
-	public static void testDisconnect(String testCase, DawsonCustomer cust)
+	public static void testDisconnect(String testCase, DawsonCustomer cust) throws IOException
 	{
-		System.out.println("\t" + testCase);
-		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
-				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		System.out.println("\n" + testCase);
+		ListPersistenceObject listPersistenceObject = new ObjectSerializedList
+				("testfiles/testRooms.ser", "testfiles/testCustomers.ser", "testfiles/testReservations.ser");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		CustomerListDB cDB = new CustomerListDB(listPersistenceObject, DawsonHotelFactory.DAWSON);
 		
 		try {
@@ -160,16 +170,17 @@ public class CustomerListDBTest
 	}
 
 
-	private static void testGetCustomer() 
+	private static void testGetCustomer() throws IOException 
 	{
 		System.out.println("\nTesting the getCustomer method");
 		setup();
-		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
-				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		ListPersistenceObject listPersistenceObject = new ObjectSerializedList
+				("testfiles/testRooms.ser", "testfiles/testCustomers.ser", "testfiles/testReservations.ser");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		CustomerListDB cDB = new CustomerListDB(listPersistenceObject);
 		testGetCustomer("Case 1 - Valid: Search for tremgin4@alloqc.ca", "tremgin4@alloqc.ca", cDB);
 		testGetCustomer("Case 2 - Valid: Search for buildco@house.com", "buildco@house.com", cDB);
-		testGetCustomer("Case 3 - Valid: Search for non existing mistake@gmail.com", "mistake@gmail.com", cDB);
+		testGetCustomer("Case 3 - Invalid: Search for non existing mistake@gmail.com", "mistake@gmail.com", cDB);
 		testGetCustomer("Case 4 - Invalid: Search for null", null, cDB);
 		teardown();
 		
@@ -177,7 +188,7 @@ public class CustomerListDBTest
 
 	public static void testGetCustomer(String testCase, String email, CustomerListDB custDB) 
 	{
-		System.out.println("\t" + testCase);
+		System.out.println("\n" + testCase);
 		try 
 		{
 			Email e = new Email(email);
@@ -194,7 +205,7 @@ public class CustomerListDBTest
 		}
 		catch(NonExistingCustomerException non)
 		{
-			System.out.println("Error! Customer does not exist. " + non.getMessage());
+			System.out.println("\tError! Customer does not exist. " + non.getMessage());
 		}
 		catch(Exception e)
 		{
@@ -203,14 +214,14 @@ public class CustomerListDBTest
 		System.out.println();
 	}
 	
-	private static void testUpdate() 
+	private static void testUpdate() throws IOException 
 	{
 		System.out.println("\nTesting the Update method");
 		setup();
-		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
-				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
-		CustomerListDB cDB = new CustomerListDB(listPersistenceObject);
-		
+		ListPersistenceObject listPersistenceObject = new ObjectSerializedList
+				("testfiles/testRooms.ser", "testfiles/testCustomers.ser", "testfiles/testReservations.ser");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		CustomerListDB cDB = new CustomerListDB(listPersistenceObject);		
 		
 		testUpdate("Case 1 - Valid: VISA, 4556681351886004", "mcawesome.derek@456.com", CardType.VISA , "4556681351886004", cDB);
 		testUpdate("Case 2 - Valid: VISA, 4556681351886004", "chrissytocool404@hitmall.com", CardType.MASTERCARD , 
@@ -224,10 +235,10 @@ public class CustomerListDBTest
 	
 	public static void testUpdate(String testCase, String email, CardType cType, String number, CustomerListDB list) 
 	{
-		System.out.println("\t" + testCase);
+		System.out.println("\n" + testCase);
 		System.out.println("\tUpdating the database...");
 		
-		try{			
+		try{		
 			CreditCard card = CreditCard.getInstance(cType, number);
 			list.update(new Email(email), card);
 			System.out.println("\t"+list);
@@ -250,11 +261,15 @@ public class CustomerListDBTest
 	
 	private static void setup()
 	{
-		String[] rooms = new String[4];
+		String[] rooms = new String[8];
 		rooms[0] = "101*normal";
 		rooms[1] = "102*normal";
-		rooms[2] = "301*suite";
-		rooms[3] = "401*penthouse";
+		rooms[2] = "206*normal";
+		rooms[3] = "304*normal";
+		rooms[4] = "601*suite";
+		rooms[5] = "701*suite";
+		rooms[6] = "704*suite";
+		rooms[7] = "801*penthouse";
 		
 		String[] custs = new String[8];
 		custs [0] = "mcawesome.derek@456.com*Derek*McAwesome*visa*4556681351886004";
@@ -287,6 +302,10 @@ public class CustomerListDBTest
 					"testfiles/testCustomers.txt");
 			ListUtilities.saveListToTextFile(reservs, 
 					"testfiles/testReservations.txt");
+			
+			Utility.serializeObject(rooms, "testfiles/testRooms.ser");
+			Utility.serializeObject(custs, "testfiles/testCustomers.ser");
+			Utility.serializeObject(reservs, "testfiles/testReservations.ser");
 		}
 		catch(IOException io){
 			System.out.println
@@ -307,5 +326,19 @@ public class CustomerListDBTest
 		if (theFile.exists()) {
 			theFile.delete();
 		}
+	}
+	
+	public static void convertSeqToSer(String seqRooms, String seqCustomers, String seqReservations) throws IOException 
+	{
+		SequentialTextFileList textFile = new SequentialTextFileList(seqRooms, seqCustomers, seqReservations);
+
+		List<Room> rooms = textFile.getRoomDatabase();
+		Utility.serializeObject(rooms, "testfiles/testRooms.ser");
+		
+		List<Customer> customers = textFile.getCustomerDatabase();
+		Utility.serializeObject(customers, "testfiles/testCustomers.ser");
+		
+		List<Reservation> reservations = textFile.getReservationDatabase();
+		Utility.serializeObject(reservations, "testfiles/testReservations.ser");		
 	}
 }

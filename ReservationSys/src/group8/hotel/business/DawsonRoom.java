@@ -51,12 +51,7 @@ public class DawsonRoom implements Room {
 		} else
 			throw new IllegalArgumentException("Room number is invalid");
 
-		if (floorNumber >= 1 && floorNumber <= 5)
-			this.roomType = roomType.NORMAL;
-		else if (floorNumber >= 6 && floorNumber <= 7)
-			this.roomType = roomType.SUITE;
-		else
-			this.roomType = roomType.PENTHOUSE;
+		this.roomType = roomType;
 	}
 
 	/**

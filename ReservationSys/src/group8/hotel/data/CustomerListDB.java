@@ -75,7 +75,8 @@ public class CustomerListDB  implements CustomerDAO
 		else 
 		{
 			Customer copyCustomer = factory.getCustomerInstance(cust.getName().getFirstName(), 
-					cust.getName().getLastName(),cust.getEmail().toString());
+					cust.getName().getLastName(), cust.getEmail().toString());
+			cust.setCreditCard(cust.getCreditCard());
 			database.add((-index - 1),copyCustomer);
 		}
 	}
@@ -181,6 +182,7 @@ public class CustomerListDB  implements CustomerDAO
 			Customer customer = database.get(index);
 			Customer copyCustomer = factory.getCustomerInstance(customer.getName().getFirstName(),
 					customer.getName().getLastName(), email.toString());
+			copyCustomer.setCreditCard(copyCustomer.getCreditCard());
 			database.set(index, copyCustomer);   
 		}
 		else

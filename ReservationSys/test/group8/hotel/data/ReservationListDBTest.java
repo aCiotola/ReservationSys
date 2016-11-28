@@ -12,43 +12,47 @@ import java.util.List;
 import dw317.hotel.business.RoomType;
 import dw317.hotel.business.interfaces.Customer;
 import dw317.hotel.business.interfaces.HotelFactory;
-
+import dw317.hotel.business.interfaces.Reservation;
+import dw317.hotel.business.interfaces.Room;
 import dw317.hotel.data.DuplicateCustomerException;
 import dw317.hotel.data.DuplicateReservationException;
 
 import dw317.hotel.data.NonExistingReservationException;
 import dw317.hotel.data.interfaces.ListPersistenceObject;
-import dw317.lib.creditcard.CreditCard;
+
 import group8.hotel.business.DawsonCustomer;
 import group8.hotel.business.DawsonHotelFactory;
 import group8.hotel.business.DawsonReservation;
 import group8.hotel.business.DawsonRoom;
 import group8.util.ListUtilities;
+import group8.util.Utility;
 
 /**
  * @author Phi Dai Nguyen
  *
  */
 public class ReservationListDBTest {
-	public static void main(String[] args) throws DuplicateCustomerException, NonExistingReservationException {
+	public static void main(String[] args) throws DuplicateCustomerException, NonExistingReservationException,
+	DuplicateReservationException, IOException 
+	{
 		testOneParameterReservationConstructor();
 		testTwoParameterReservationConstructor();
-
 		testReservationAdd();
 		testReservationDisconnect();
 		testGetReservations();
 		testCancel();
-		testGetReservationRooms();
+		testGetReservedRooms();
 		testGetFreeRooms();
 		testGetFreeRoomsWithType();
 		testClearAllPast();
 	}
 
-	private static void testOneParameterReservationConstructor() {
+	private static void testOneParameterReservationConstructor() throws IOException {
 		System.out.println("\nTesting the one parameter constructor.");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		testOneParameterReservationConstructor("Case 1: Valid", listPersistenceObject);
 		testOneParameterReservationConstructor("Case 2: null listPersistenceObject", null);
 		teardown();
@@ -67,11 +71,12 @@ public class ReservationListDBTest {
 		System.out.println();
 	}
 
-	private static void testTwoParameterReservationConstructor() {
+	private static void testTwoParameterReservationConstructor() throws IOException {
 		System.out.println("\nTesting the two parameter constructor.");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		testTwoParameterReservationConstructor("Case 1: Valid", listPersistenceObject, DawsonHotelFactory.DAWSON);
 		testTwoParameterReservationConstructor("Case 2: null listPersistenceObject", null, DawsonHotelFactory.DAWSON);
 		testTwoParameterReservationConstructor("Case 3: null DawsonHotelFactory", listPersistenceObject, null);
@@ -92,22 +97,24 @@ public class ReservationListDBTest {
 		System.out.println();
 	}
 
-	private static void testReservationAdd() throws DuplicateCustomerException {
+	private static void testReservationAdd() throws DuplicateCustomerException, IOException {
 		System.out.println("\nTesting the Add method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 
 		DawsonRoom room1 = new DawsonRoom(103, RoomType.NORMAL);
-		DawsonRoom room2 = new DawsonRoom(402, RoomType.PENTHOUSE);
+		// DawsonRoom room2 = new DawsonRoom(302,RoomType.SUITE);
+		DawsonRoom room3 = new DawsonRoom(402, RoomType.PENTHOUSE);
 
 		DawsonCustomer customer1 = new DawsonCustomer("John", "Smith", "00000000@outlook.com");
 		DawsonCustomer customer2 = new DawsonCustomer("Sam", "Nicholas", "NNNNNNNNNNNN@gmail.com");
 		DawsonCustomer customer3 = new DawsonCustomer("Sam", "Nicholas", "NNNNNNNNNNNN@gmail.com");
 
 		DawsonReservation reservation1 = new DawsonReservation(customer1, room1, 2020, 5, 1, 2020, 5, 15);
-		DawsonReservation reservation2 = new DawsonReservation(customer2, room2, 2020, 1, 1, 2020, 2, 1);
-		DawsonReservation reservation3 = new DawsonReservation(customer3, room2, 2020, 1, 1, 2020, 2, 1);
+		DawsonReservation reservation2 = new DawsonReservation(customer2, room3, 2020, 1, 1, 2020, 2, 1);
+		DawsonReservation reservation3 = new DawsonReservation(customer3, room3, 2020, 1, 1, 2020, 2, 1);
 
 		testReservationAdd("Case 1: Valid - Adding 2 different Reservations", reservation1, reservation2,
 				listPersistenceObject);
@@ -136,7 +143,7 @@ public class ReservationListDBTest {
 
 	}
 
-	private static void testReservationDisconnect() {
+	private static void testReservationDisconnect() throws IOException {
 		System.out.println("\nTesting the Disconnect method");
 		setup();
 		DawsonCustomer customer1 = new DawsonCustomer("Samuel", "Mark", "MMMMMMMMMMMMMMM@outlook.com");
@@ -153,16 +160,18 @@ public class ReservationListDBTest {
 		teardown();
 	}
 
-	public static void testReservationDisconnect(String testCase, DawsonReservation res) {
+	public static void testReservationDisconnect(String testCase, DawsonReservation res) throws IOException {
 		System.out.println("\t" + testCase);
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject, DawsonHotelFactory.DAWSON);
 
 		try {
 			rDB.add(res);
 			System.out.println("\tReservation added.");
-			System.out.println(rDB);
+			System.out.println(rDB); 
+			
 			rDB.disconnect();
 			System.out.print("\tReservation disconnected.");
 		} catch (IllegalArgumentException iae) {
@@ -177,11 +186,12 @@ public class ReservationListDBTest {
 		System.out.println();
 	}
 
-	private static void testGetReservations() {
+	private static void testGetReservations() throws IOException {
 		System.out.println("\nTesting the getReservations method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject);
 
 		DawsonCustomer customer1 = new DawsonCustomer("Derek", "McAwesome", "mcawesome.derek@456.com");
@@ -205,7 +215,6 @@ public class ReservationListDBTest {
 
 		} catch (NullPointerException npe) {
 			System.out.print("\tError! There is a null list value. " + npe.getMessage());
-			
 		} catch (IllegalArgumentException iae) {
 			System.out.print("\tError! There is an invalid value. " + iae.getMessage());
 		}
@@ -216,21 +225,22 @@ public class ReservationListDBTest {
 
 	}
 
-	private static void testCancel() throws NonExistingReservationException {
+	private static void testCancel() throws NonExistingReservationException, DuplicateReservationException, IOException {
 		System.out.println("\nTesting the cancel method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject);
 
-		DawsonCustomer customer1 = new DawsonCustomer("Huey", "Freeman", "huey@gmail.com");
+		DawsonCustomer customer1 = new DawsonCustomer("Derek", "McAwesome", "mcawesome.derek@456.com");
 		DawsonCustomer customer2 = new DawsonCustomer("Zed", "Nicholas", "ZZZZZZZZZZZZZZZZ@gmail.com");
 
-		DawsonRoom room1 = new DawsonRoom(702, RoomType.SUITE);
+		DawsonRoom room1 = new DawsonRoom(801, RoomType.PENTHOUSE);
 		DawsonRoom room2 = new DawsonRoom(302, RoomType.SUITE);
 
-		DawsonReservation reservation1 = new DawsonReservation(customer1, room1, 2016, 6, 21, 2016, 6, 29);
+		DawsonReservation reservation1 = new DawsonReservation(customer1, room1, 2017, 1, 8, 2017, 1, 19);
 		DawsonReservation reservation2 = new DawsonReservation(customer2, room2, 2020, 5, 1, 2020, 5, 2);
 
 		testCancel("\nCase 1 : Valid remove", reservation1, rDB);
@@ -240,10 +250,12 @@ public class ReservationListDBTest {
 	}
 
 	public static void testCancel(String testCase, DawsonReservation res, ReservationListDB rDB)
-			throws NonExistingReservationException {
+			throws NonExistingReservationException, DuplicateReservationException {
 		System.out.println("\t" + testCase);
 
 		try {
+
+			rDB.add(res);
 			rDB.cancel(res);
 			System.out.println("\nCancelled Successfully!");
 		} catch (NullPointerException npe) {
@@ -252,48 +264,61 @@ public class ReservationListDBTest {
 			System.out.println("\tError! This is an invalid list value." + iae.getMessage());
 		} catch (NonExistingReservationException non) {
 			System.out.println("\tError! The reservation does not exist!" + non.getMessage());
+		} catch (DuplicateReservationException e) {
+			System.out.println("Reservation already exists if you're adding!"
+			+ e.getMessage());
 		}
 
 	}
 
-	private static void testGetReservationRooms() {
+	private static void testGetReservedRooms() throws IOException {
 		System.out.println("\nTesting the getReservationRooms method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject);
 
 		LocalDate checkIn1 = LocalDate.of(2017, 1, 8);
 		LocalDate checkOut1 = LocalDate.of(2017, 1, 19);
-
-		testGetReservationRooms("Case 1 - Valid (Reserved Room)", checkIn1, checkOut1, rDB);
-		testGetReservationRooms("Case 2 - Invalid (Null checkIn)", null, checkOut1, rDB);
-		testGetReservationRooms("Case 3 - Invalid (Null checkOut)", checkIn1, null, rDB);
 		
+		LocalDate checkIn2 = LocalDate.of(2020,3,3);
+		LocalDate checkOut2 = LocalDate.of(2020, 4, 4);
+
+		testGetReservedRooms("Case 1 - Valid (Reserved Room)", checkIn1, checkOut1, rDB);
+		testGetReservedRooms("Case 2 - Invalid (Null checkIn)", null, checkOut1, rDB);
+		testGetReservedRooms("Case 3 - Invalid (Null checkOut)", checkIn1, null, rDB);
+		testGetReservedRooms("Case 4 - Invalid (both nulls)", null, null, rDB);
+		testGetReservedRooms("Case 5 - Invalid (date not in database)", checkIn2, checkOut2, rDB);
 		teardown();
+
 	}
 
-	public static void testGetReservationRooms(String testCase, LocalDate checkIn, LocalDate checkOut,
+	public static void testGetReservedRooms(String testCase, LocalDate checkIn, LocalDate checkOut,
 			ReservationListDB rDB) {
-		System.out.println("\t" + testCase);
+		System.out.println("\t" + testCase + "\n");
 
 		try {
-			rDB.getReservedRooms(checkIn, checkOut);
-			System.out.println("There is a reserved room!");
+			List<Room> room = rDB.getReservedRooms(checkIn, checkOut);
+			if (room.size() == 0)
+				System.out.println("There is no reserved room in the period!");
+			else
+			System.out.println("There is a reserved room! " + room);
 		} catch (IllegalArgumentException iae) {
-			System.out.println("\tError! Has to be a date!" + iae.getMessage());
+			System.out.println("\tError! Has to be a date! " + iae.getMessage());
 		} catch (DateTimeException dte) {
 			System.out.println("\tInvalid dates!" + dte.getMessage());
 		} catch (NullPointerException npe) {
-			System.out.println("\tError! There is a null value!");
+			System.out.println("\tError! There is a null value! " + npe.getMessage());
 		}
 	}
 
-	private static void testGetFreeRooms() {
+	private static void testGetFreeRooms() throws IOException {
 		System.out.println("\nTesting the getFreeRooms method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject);
 
 		LocalDate checkIn1 = LocalDate.of(2020, 1, 8);
@@ -303,7 +328,7 @@ public class ReservationListDBTest {
 		LocalDate checkOut2 = LocalDate.of(2016, 9, 15);
 
 		testGetFreeRooms("Case 1 - Valid (Free Room)", checkIn1, checkOut1, rDB);
-		testGetFreeRooms("Case 2 - Valid (Not a Free Room", checkIn2, checkOut2, rDB);
+		testGetFreeRooms("Case 2 - Valid (Not a Free Room)", checkIn2, checkOut2, rDB);
 		testGetFreeRooms("Case 3 - Invalid (Null checkIn)", null, checkOut1, rDB);
 		testGetFreeRooms("Case 4 - Invalid (Null checkOut)", checkIn1, null, rDB);
 		testGetFreeRooms("case 5 - Invalid (both nulls)", null, null, rDB);
@@ -314,22 +339,23 @@ public class ReservationListDBTest {
 		System.out.println("\t" + testCase);
 
 		try {
-			rDB.getFreeRooms(checkIn, checkOut);
-			System.out.println("There is a free room!");
+			List<Room> rooms = rDB.getFreeRooms(checkIn, checkOut);
+			System.out.println("There is a free room! " + rooms);
 		} catch (IllegalArgumentException iae) {
 			System.out.println("\tError! Has to be a date!" + iae.getMessage());
 		} catch (DateTimeException dte) {
 			System.out.println("\tInvalid dates!" + dte.getMessage());
 		} catch (NullPointerException npe) {
-			System.out.println("\tError! There is a null value!");
+			System.out.println("\tError! There is a null value!" + npe.getMessage());
 		}
 	}
 
-	private static void testGetFreeRoomsWithType() {
+	private static void testGetFreeRoomsWithType() throws IOException {
 		System.out.println("\nTesting the getFreeRooms method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject);
 
 		LocalDate checkIn1 = LocalDate.of(2020, 1, 8);
@@ -338,7 +364,7 @@ public class ReservationListDBTest {
 		LocalDate checkIn2 = LocalDate.of(2016, 9, 10);
 		LocalDate checkOut2 = LocalDate.of(2016, 9, 15);
 		RoomType type = RoomType.NORMAL;
-		RoomType type2 = RoomType.SUITE;
+		
 
 		testGetFreeRoomsWithType("Case 1 - Valid (Free Room + type)", checkIn1, checkOut1, type, rDB);
 		testGetFreeRoomsWithType("Case 2 - Valid (No Free Room + type)", checkIn2, checkOut2, type, rDB);
@@ -354,8 +380,8 @@ public class ReservationListDBTest {
 		System.out.println("\t" + testCase);
 
 		try {
-			rDB.getFreeRooms(checkIn, checkOut, type);
-			System.out.println("There is a free room!");
+			List<Room> rooms = rDB.getFreeRooms(checkIn, checkOut, type);
+			System.out.println("There is a free room! " + rooms);
 		} catch (IllegalArgumentException iae) {
 			System.out.println("\tError! Has to be a date!" + iae.getMessage());
 		} catch (DateTimeException dte) {
@@ -365,39 +391,38 @@ public class ReservationListDBTest {
 		}
 	}
 
-	private static void testClearAllPast() {
+	private static void testClearAllPast() throws IOException {
 		System.out.println("\nTesting the clearAllPast method");
 		setup();
 		ListPersistenceObject listPersistenceObject = new SequentialTextFileList("testfiles/testRooms.txt",
 				"testfiles/testCustomers.txt", "testfiles/testReservations.txt");
+		convertSeqToSer("testfiles/testRooms.txt", "testfiles/testCustomers.txt", "testfiles/testReservations.txt");
 		ReservationListDB rDB = new ReservationListDB(listPersistenceObject);
 
-		
 		testClearAllPast("Case 1 - Valid Clear", rDB);
 		teardown();
+
 	}
 
-	public static void testClearAllPast(String testCase, ReservationListDB rDB)
-	{
+	public static void testClearAllPast(String testCase, ReservationListDB rDB) {
 		System.out.println("\t" + testCase);
-		try
-		{
-			rDB.clearAllPast();
-			System.out.println("Cleared reservations whose checkout date is before the current date!");
-			System.out.println(rDB);
-		}
-		catch(Exception e)
-		{
-			e.getMessage();
-		}
+		rDB.clearAllPast();
+		System.out.println("Cleared reservations!");
+		System.out.println(rDB);
+		
 	}
 
 	private static void setup() {
-		String[] rooms = new String[4];
+		String[] rooms = new String[8];
 		rooms[0] = "101*normal";
 		rooms[1] = "102*normal";
-		rooms[2] = "301*suite";
-		rooms[3] = "401*penthouse";
+		rooms[2] = "206*normal";
+		rooms[3] = "304*normal";
+		rooms[4] = "601*suite";
+		rooms[5] = "701*suite";
+		rooms[6] = "704*suite";
+		rooms[7] = "801*penthouse";
+		
 
 		String[] custs = new String[8];
 		custs[0] = "mcawesome.derek@456.com*Derek*McAwesome*visa*4556681351886004";
@@ -427,6 +452,11 @@ public class ReservationListDBTest {
 			ListUtilities.saveListToTextFile(rooms, "testfiles/testRooms.txt");
 			ListUtilities.saveListToTextFile(custs, "testfiles/testCustomers.txt");
 			ListUtilities.saveListToTextFile(reservs, "testfiles/testReservations.txt");
+			
+			Utility.serializeObject(rooms, "testfiles/testRooms.ser");
+			Utility.serializeObject(custs, "testfiles/testCustomers.ser");
+			Utility.serializeObject(reservs, "testfiles/testReservations.ser");
+			
 		} catch (IOException io) {
 			System.out.println("Error creating file in setUp()");
 		}
@@ -446,4 +476,18 @@ public class ReservationListDBTest {
 			theFile.delete();
 		}
 	}
+		
+		public static void convertSeqToSer(String seqRooms, String seqCustomers, String seqReservations) throws IOException 
+		{
+			SequentialTextFileList textFile = new SequentialTextFileList(seqRooms, seqCustomers, seqReservations);
+
+			List<Room> rooms = textFile.getRoomDatabase();
+			Utility.serializeObject(rooms, "testfiles/testRooms.ser");
+			
+			List<Customer> customers = textFile.getCustomerDatabase();
+			Utility.serializeObject(customers, "testfiles/testCustomers.ser");
+			
+			List<Reservation> reservations = textFile.getReservationDatabase();
+			Utility.serializeObject(reservations, "testfiles/testReservations.ser");		
+		}
 }

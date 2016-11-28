@@ -115,7 +115,6 @@ public class DawsonCustomer implements Customer {
 		int result = 1;
 
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 
 		return result;
 	}
